@@ -56,6 +56,27 @@
   display: block;
 }
 
+/* Картинка или постер: проявляется, когда загрузилась */
+.still {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.still[data-loaded] {
+  opacity: 1;
+}
+
+/* Видео поверх постера, видно с первого кадра */
+.video {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.video[data-playing] {
+  opacity: 1;
+}
+
 /* Подпись как строка Experience: заказчик и шот — равные половины по левому краю, один блок — вся ширина */
 .caption {
   display: flex;

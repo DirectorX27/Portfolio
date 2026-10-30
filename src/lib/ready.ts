@@ -22,7 +22,17 @@ export function waitFor(promise: Promise<unknown>) {
   pending.push(promise.catch(() => {}));
 }
 
-const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, Math.max(0, ms)));
+// Картинка из DOM загрузилась (или не смогла). decode() у картинки в DOM может зависнуть,
+// пока страница не рисует кадры, поэтому слушаем load
+export function imageLoaded(img: HTMLImageElement) {
+  return new Promise<void>((resolve) => {
+    if (img.complete) return resolve();
+    img.addEventListener('load', () => resolve(), { once: true });
+    img.addEventListener('error', () => resolve(), { once: true });
+  });
+}
+
+const delay =(ms: number) => new Promise<void>((resolve) => setTimeout(resolve, Math.max(0, ms)));
 
 // Зовётся из эффекта App: эффекты детей срабатывают раньше, поэтому все waitFor уже собраны
 export function reveal() {

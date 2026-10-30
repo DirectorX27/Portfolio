@@ -1,16 +1,17 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { avatar, profile } from '@/config/site';
-import { waitFor } from '@/lib/ready';
+import { imageLoaded, waitFor } from '@/lib/ready';
 import styles from './AvatarVideo.module.css';
 
+// Постер — обычная картинка под видео: Safari рисует poster у <video> с задержкой,
+// а картинку прелоудер может дождаться. Видео проявляется поверх, когда пошли кадры.
 export function AvatarVideo() {
+  const imgRef = useRef<HTMLImageElement>(null);
   const ref = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
 
-  // Прелоудер ждёт постер: видео потом стартует с того же кадра
   useEffect(() => {
-    const img = new Image();
-    img.src = avatar.poster;
-    waitFor(img.decode());
+    if (imgRef.current) waitFor(imageLoaded(imgRef.current));
   }, []);
 
   // Уважаем prefers-reduced-motion: оставляем постер, видео не играет
@@ -28,19 +29,23 @@ export function AvatarVideo() {
   }, []);
 
   return (
-    <video
-      ref={ref}
-      className={styles.avatar}
-      poster={avatar.poster}
-      autoPlay
-      muted
-      loop
-      playsInline
-      preload="metadata"
-      aria-label={`${profile.name}, portrait`}
-    >
-      <source src={avatar.videoWebm} type="video/webm" />
-      <source src={avatar.videoMp4} type="video/mp4" />
-    </video>
+    <div className={styles.avatar} role="img" aria-label={`${profile.name}, portrait`}>
+      <img ref={imgRef} className={styles.layer} src={avatar.poster} alt="" />
+      <video
+        ref={ref}
+        className={styles.layer}
+        data-playing={playing || undefined}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        aria-hidden="true"
+        onPlaying={() => setPlaying(true)}
+      >
+        <source src={avatar.videoWebm} type="video/webm" />
+        <source src={avatar.videoMp4} type="video/mp4" />
+      </video>
+    </div>
   );
 }

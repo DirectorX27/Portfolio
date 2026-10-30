@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { altOf, captionOf, isVideo, type Work } from '@/data/works';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { gallery } from '@/config/site';
+import { imageLoaded, waitFor } from '@/lib/ready';
 import { distribute } from './layout';
 import styles from './WorkList.module.css';
 
@@ -33,9 +34,14 @@ function WorkCard({ work, focusable }: { work: Work; focusable: boolean }) {
         {work.src &&
           (isVideo(work) ? (
             // В скрытом списке (рядом WebGL) видео не грузим второй раз, подписи хватает скринридеру
-            focusable && <WorkVideo work={work} />
+            focusable && (
+              <>
+                {work.poster && <Still work={work} src={work.poster} alt="" eager />}
+                <WorkVideo work={work} />
+              </>
+            )
           ) : (
-            <img src={work.src} alt={altOf(work)} width={work.width} height={work.height} loading="lazy" />
+            <Still work={work} src={work.src} alt={altOf(work)} eager={focusable} />
           ))}
       </div>
       <figcaption className={styles.caption}>
@@ -62,11 +68,43 @@ function WorkCard({ work, focusable }: { work: Work; focusable: boolean }) {
   );
 }
 
+// Картинка или постер. В видимом списке грузятся сразу, а не при подлёте к экрану,
+// чтобы при прокрутке не появлялись на глазах; если сеть не успела — проявляются плавно
+function Still({ work, src, alt, eager }: { work: Work; src: string; alt: string; eager: boolean }) {
+  const ref = useRef<HTMLImageElement>(null);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const img = ref.current;
+    if (!img) return;
+    // Из кэша картинка может загрузиться раньше, чем React повесит onLoad
+    if (img.complete) setLoaded(true);
+    // Карточку на первом экране (планшет повыше) ждёт прелоудер
+    if (eager && img.getBoundingClientRect().top < window.innerHeight) waitFor(imageLoaded(img));
+  }, [eager]);
+
+  return (
+    <img
+      ref={ref}
+      className={styles.still}
+      data-loaded={loaded || undefined}
+      src={src}
+      alt={alt}
+      width={work.width}
+      height={work.height}
+      loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
+      onLoad={() => setLoaded(true)}
+    />
+  );
+}
+
 // Видео без звука по кругу: грузится и играет, только пока на экране.
-// До этого виден постер; при reduced-motion видео не запускается.
+// Под ним постер-картинка; видео проявляется, когда пошли кадры. При reduced-motion не запускается.
 function WorkVideo({ work }: { work: Work }) {
   const ref = useRef<HTMLVideoElement>(null);
   const reduced = useReducedMotion();
+  const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
     const video = ref.current;
@@ -89,8 +127,9 @@ function WorkVideo({ work }: { work: Work }) {
   return (
     <video
       ref={ref}
+      className={styles.video}
+      data-playing={playing || undefined}
       src={work.src}
-      poster={work.poster}
       aria-label={altOf(work)}
       width={work.width}
       height={work.height}
@@ -98,6 +137,7 @@ function WorkVideo({ work }: { work: Work }) {
       loop
       playsInline
       preload="none"
+      onPlaying={() => setPlaying(true)}
     />
   );
 }

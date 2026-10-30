@@ -1,10 +1,29 @@
 /* avatar: 148×148, radius 20, cover */
 .avatar {
+  position: relative;
   flex: 0 0 148px;
   min-width: 0;
   height: 148px;
+  overflow: hidden;
   border-radius: var(--radius-avatar);
+  background-color: var(--surfaceneutral);
+}
+
+/* Постер и видео друг над другом */
+.layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   object-position: 50%;
-  background-color: var(--surfaceneutral);
+}
+
+/* Видео видно, только когда пошли кадры: до этого под ним постер */
+video.layer {
+  opacity: 0;
+}
+
+video.layer[data-playing] {
+  opacity: 1;
 }
