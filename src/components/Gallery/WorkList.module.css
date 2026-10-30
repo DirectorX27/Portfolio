@@ -1,0 +1,83 @@
+/* Список работ без WebGL: колонки по gallery.columns, gap 20, между карточками 32 */
+.list {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.link {
+  display: block;
+  text-decoration: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+}
+
+.media {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  background-color: var(--surfaceneutral);
+}
+
+/* Обводка поверх медиа, как граница строк Experience; в WebGL её рисует шейдер */
+.media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 0.8px solid var(--border-divider);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.media img,
+.media video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.media video {
+  display: block;
+}
+
+/* Подпись как строка Experience: заказчик и шот — равные половины по левому краю, один блок — вся ширина */
+.caption {
+  display: flex;
+  gap: 8px;
+  padding-inline: 20px;
+  font-size: var(--body-s);
+  line-height: var(--20px);
+  color: var(--textsecondary);
+}
+
+.part {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* 1039 и ниже: между карточками 24, подпись без боковых отступов */
+@media (max-width: 1039px) {
+  .column {
+    gap: 24px;
+  }
+
+  .caption {
+    padding-inline: 0;
+  }
+}
