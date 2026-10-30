@@ -1,0 +1,58 @@
+/* openToWork: h 32, pill, padding 8/12, gap 4 */
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 12px 0 8px;
+  border-radius: 41px;
+  background-color: var(--surfaceneutral);
+}
+
+.indicator {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  overflow: visible;
+}
+
+/* Ореол: rgb(13 201 151 / 20%) в покое, пульсирует */
+.halo {
+  fill: color-mix(in srgb, var(--status-positive) 20%, transparent);
+  transform-origin: 8px 8px;
+  animation: halo 1.6s ease-in-out infinite;
+}
+
+.dot {
+  fill: var(--status-positive);
+  animation: blink 1.6s ease-in-out infinite;
+}
+
+@keyframes halo {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.label {
+  font-size: var(--caption);
+  line-height: var(--14px);
+  color: var(--textsecondary);
+  white-space: nowrap;
+}

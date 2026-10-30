@@ -1,0 +1,7 @@
+node_modules
+dist
+.DS_Store
+*.local
+# исходники галереи — на сайт идут копии из public/works
+Gallery
+*.tsbuildinfo

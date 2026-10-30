@@ -1,0 +1,55 @@
+/* Experience: заголовок + список, gap 4 */
+.experience {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--body-m);
+  font-weight: var(--medium);
+  line-height: var(--20px);
+  color: var(--textprimary);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Строка: h 48, лого 22 + текст, gap 8. Разделитель на всю ширину, у последней строки нет */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding-block: 12px;
+  border-bottom: 0.8px solid var(--border-divider);
+  font-size: var(--body-s);
+  line-height: var(--20px);
+  color: var(--textsecondary);
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.logo {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-logo);
+  object-fit: cover;
+}
+
+.company,
+.period {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.period {
+  text-align: right;
+}

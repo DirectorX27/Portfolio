@@ -1,0 +1,164 @@
+/* Обёртка: pill-кнопки абсолютно над Contact, чтобы раскрытие не двигало колонку */
+.root {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Ряд контактов: gap 4, отступ 8 от кнопки (как в макете) */
+.list {
+  position: absolute;
+  inset-inline: 0;
+  bottom: calc(100% + 8px);
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Ширины делятся поровну (basis 0). У наведённой basis 8px: она получает свою долю fill + 8,
+   остальные отдают по 2px, и ряд остаётся 300 */
+.item {
+  flex: 1 1 0;
+  min-width: 0;
+  transform-origin: center bottom;
+  transition: flex-basis 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.item:hover,
+.item:focus-within {
+  flex-basis: 8px;
+}
+
+/* Button: pill h 32, surfaceneutral. При колонке 300 на pill ~72px:
+   отступы 8, чтобы «Telegram» и «LinkedIn» помещались и оставались по центру */
+.pill {
+  display: grid;
+  place-items: center;
+  height: 32px;
+  padding-inline: 8px;
+  border-radius: var(--radius-pill);
+  background-color: var(--surfaceneutral);
+  color: var(--textsecondary);
+  font-size: var(--caption);
+  line-height: var(--14px);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s, background-color 0.2s;
+}
+
+/* hover из макета: surfaceneutral-hover + textprimary */
+.pill:hover,
+.pill:focus-visible {
+  background-color: var(--surfaceneutral-hover);
+  color: var(--textprimary);
+}
+
+/* Button: 300×40, radius 12 */
+.button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 40px;
+  padding: 0 10px 0 16px;
+  border: 0;
+  border-radius: var(--radius-button);
+  overflow: clip;
+  background-color: transparent;
+  cursor: pointer;
+  isolation: isolate;
+}
+
+/* Меш выходит на 1px за кнопку: на дробных координатах и при scale край канваса
+   сглаживается с прозрачностью и даёт светлую кайму. С запасом скругление режет по сплошному цвету.
+   Фолбэк #262521 тоже здесь, а не на кнопке, иначе он тёмным ободком просвечивает в сглаженном краю */
+.gradient {
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  background-color: var(--button-fallback);
+}
+
+/* Тот же оверлей держится, пока на кнопку наведена мышь. Отдельный слой, чтобы не спорить со вспышкой */
+.button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--overlay);
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .button:hover::before {
+    opacity: 1;
+  }
+}
+
+/* 1039 и ниже: без клавиши «C», лейбл по центру; кнопка 48, pill 40 */
+@media (max-width: 1039px) {
+  .button {
+    justify-content: center;
+    height: 48px;
+    padding-inline: 16px;
+  }
+
+  .pill {
+    height: 40px;
+  }
+
+  .key {
+    display: none;
+  }
+}
+
+/* overlay: белый 10% поверх меша, видим только во время вспышки */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background-color: var(--overlay);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.label {
+  position: relative;
+  color: var(--textuniversalwhite);
+  font-size: var(--body-m);
+  line-height: var(--20px);
+}
+
+/* Клавиша: 20×20, шейп клавиши (обводка с утолщением снизу) белым 30%, буква Geist Mono 13/17 */
+.key {
+  position: relative;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: var(--textuniversalwhite);
+  font-family: var(--font-mono);
+  font-weight: var(--regular);
+  font-size: 13px;
+  line-height: 17px;
+  text-align: center;
+}
+
+.keycap {
+  position: absolute;
+  inset: 0;
+  fill: currentColor;
+  opacity: 0.3;
+}
+
+.keyLabel {
+  position: absolute;
+  inset: 0 0 auto;
+  transition: transform 0.15s;
+}
+
+/* Нажатие: буква проседает на толщину нижней грани */
+.key[data-pressed] .keyLabel {
+  transform: translateY(1.5px);
+}

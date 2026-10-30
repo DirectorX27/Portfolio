@@ -1,0 +1,66 @@
+/* Who: имя + роль, без отступа */
+.intro {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--body-m);
+  font-weight: var(--medium);
+  line-height: var(--20px);
+  color: var(--textprimary);
+}
+
+.description {
+  margin: 0;
+  color: var(--textsecondary);
+  text-align: left;
+}
+
+/* «product designer»: акцентный цвет, medium */
+.accent {
+  font-weight: var(--medium);
+  color: var(--text-accent);
+}
+
+/* Слово-роль: каждые 4,5 с сменяется следующим из profile.roles. Старое слово пропадает сразу,
+   новое проявляется по буквам слева направо: каждая буква выходит из размытия
+   и проходит по цветам MeshGradient (--mesh-0..3 задаёт Intro.tsx), затем оседает в акцент.
+   Ширину при смене плавно ведёт Intro.tsx, поэтому «designer» не прыгает.
+   Порядок: тёмный сланец → лаванда → шалфей → янтарь, чтобы янтарь мягко перетёк в коричневый акцент */
+.role {
+  display: inline-block;
+  white-space: nowrap;
+  transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.letter {
+  display: inline-block;
+  animation: letter-reveal 700ms ease-out both;
+}
+
+@keyframes letter-reveal {
+  0% {
+    opacity: 0;
+    filter: blur(4px);
+    color: var(--mesh-1);
+  }
+  18% {
+    opacity: 1;
+    filter: blur(0);
+    color: var(--mesh-1);
+  }
+  36% {
+    color: var(--mesh-2);
+  }
+  54% {
+    color: var(--mesh-0);
+  }
+  72% {
+    color: var(--mesh-3);
+  }
+  100% {
+    color: var(--text-accent);
+  }
+}

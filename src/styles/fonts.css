@@ -1,0 +1,50 @@
+/* Inter Display = Inter Variable с осью opsz 32 (см. --font-display-settings) */
+@font-face {
+  font-family: 'Inter Display';
+  src: url('../assets/fonts/InterVariable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Тот же Inter Display, но opsz 32 зашит в файл: 2D-канвас галереи не умеет font-variation-settings
+   и без этого рисует подпись с opsz 14 (шире и другого рисунка, чем строки Experience) */
+@font-face {
+  font-family: 'Inter Display Static';
+  src: url('../assets/fonts/InterDisplay-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('../assets/fonts/GeistMono-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('../assets/fonts/GeistMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('../assets/fonts/JetBrainsMono-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Matrix Sans Print';
+  src: url('../assets/fonts/MatrixSans-Print.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}

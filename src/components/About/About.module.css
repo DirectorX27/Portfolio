@@ -1,0 +1,70 @@
+/* About: 300px, padding-block 32, gap 32. Колонка закреплена и занимает высоту окна */
+.about {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+  flex-shrink: 0;
+  width: var(--about-width);
+  height: 100svh;
+  min-height: 640px;
+  padding-block: var(--page-padding-block);
+}
+
+/* wrapper-avatar: аватар + часы, gap 4 */
+.media {
+  display: flex;
+  gap: 4px;
+}
+
+/* Wrapper-controls: прижат к низу, gap 16 */
+.controls {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 16px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* wrapper-theme */
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+@media (max-width: 1039px) {
+  .about {
+    position: static;
+    height: auto;
+    min-height: 0;
+    max-width: 100%;
+  }
+
+  .controls {
+    flex: 0 0 auto;
+    margin-top: 32px;
+  }
+}
+
+/* 471 и ниже (макет 375): на всю ширину, сверху 16, аватар и часы — квадраты по половине ширины */
+@media (max-width: 471px) {
+  .about {
+    width: 100%;
+    padding-top: 16px;
+  }
+
+  .media {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .about .media > * {
+    width: auto;
+    height: auto;
+    aspect-ratio: 1;
+  }
+}

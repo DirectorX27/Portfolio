@@ -1,0 +1,69 @@
+/* clock: круг 148, padding 16/40, space-between */
+.clock {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  width: 148px;
+  height: 148px;
+  padding: 16px 40px;
+  border-radius: var(--radius-pill);
+  background-color: var(--surfaceclock);
+  color: var(--textuniversalwhite);
+  /* Мягкая тень держит белый текст на светлом небе */
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.22);
+}
+
+/* Небо под текстом; без WebGL канвасы скрыты и виден фон surfaceclock */
+.sky {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Temperature / Location: Matrix Sans Print 11px, трекинг 0.1em */
+.label {
+  align-self: stretch;
+  font-family: var(--font-label);
+  font-variation-settings: normal;
+  font-size: var(--clock-label);
+  line-height: 100%;
+  letter-spacing: var(--tracking-label);
+  text-align: center;
+}
+
+/* Hours / Minutes: JetBrains Mono Light 40px, lh 94% */
+.time {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-self: stretch;
+  font-family: var(--font-clock);
+  font-variation-settings: normal;
+  font-weight: var(--light);
+  font-size: var(--clock-digits);
+  line-height: 94%;
+  letter-spacing: 0;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 471 и ниже: круг резиновый — цифры держат десктопную пропорцию 40/148 */
+@media (max-width: 471px) {
+  .clock {
+    container-type: inline-size;
+  }
+
+  .time {
+    /* cqw — от контентной ширины, возвращаем боковые padding 40+40 */
+    font-size: calc((100cqw + 80px) * 40 / 148);
+  }
+}

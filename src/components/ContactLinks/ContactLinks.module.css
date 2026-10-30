@@ -1,0 +1,41 @@
+/* Frame под галереей: отступ 32 от последней карточки, на всю ширину контейнера */
+.root {
+  align-self: stretch;
+  margin-top: 32px;
+}
+
+/* gap 4, ширины поровну */
+.list {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Button: pill h 32, surfaceneutral, как в Contact */
+.pill {
+  display: grid;
+  place-items: center;
+  height: 32px;
+  padding-inline: 8px;
+  border-radius: var(--radius-pill);
+  background-color: var(--surfaceneutral);
+  color: var(--textsecondary);
+  font-size: var(--caption);
+  line-height: var(--14px);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s, background-color 0.2s;
+}
+
+.pill:hover,
+.pill:focus-visible {
+  background-color: var(--surfaceneutral-hover);
+  color: var(--textprimary);
+}

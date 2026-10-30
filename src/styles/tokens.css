@@ -1,0 +1,86 @@
+/*
+ * Токены перенесены из Paper (файл «My folio», страница Theme). Имена совпадают с макетом
+ * без префикса light/dark, чтобы сверка шла один к одному.
+ */
+:root {
+  /* Цвет: поверхности */
+  --surfacebackground: #fdfcfa;
+  --surfaceneutral: #f7f5eb;
+  --surfaceneutral-hover: #ebe8db;
+  --surfaceclock: #262521;
+
+  /* Цвет: текст */
+  --textprimary: #262521;
+  --textsecondary: #666256;
+  --textuniversalwhite: #fdfcf8;
+
+  /* Цвет: значения из макета без токена */
+  --text-accent: #4f4022; /* textaccent: «product designer» в блоке Who */
+  --border-divider: #e5e4dc; /* stroke */
+  --icon-muted: #c0bba7; /* shapesecondary */
+  --status-positive: #0dc997;
+  --button-fallback: #262521;
+
+  /* Шрифты */
+  --display: 'Inter Display', system-ui, sans-serif;
+  --font-display-settings: 'opsz' 32;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
+  --font-clock: 'JetBrains Mono', ui-monospace, monospace;
+  --font-label: 'Matrix Sans Print', system-ui, sans-serif;
+
+  /* Кегли */
+  --body-m: 15px;
+  --body-s: 14px;
+  --caption: 12px;
+  --clock-digits: 40px;
+  --clock-label: 11px;
+
+  /* Начертания, трекинг, интерлиньяж */
+  --regular: 400;
+  --medium: 500;
+  --light: 300;
+  --tracking-basic: -0.2px;
+  --tracking-label: 0.1em;
+  --20px: 20px;
+  --14px: 14px;
+
+  /* Сетка страницы */
+  --page-padding-block: 32px;
+  --column-gap: 80px;
+  --about-width: 300px;
+  --gallery-width: 560px;
+  --section-gap: 32px;
+
+  /* Радиусы */
+  --radius-avatar: 20px;
+  --radius-logo: 8px;
+  --radius-button: 12px;
+  --radius-pill: 999px;
+
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --surfacebackground: #0d0d0d;
+  --surfaceneutral: #181715;
+  --surfaceneutral-hover: #252422;
+  --surfaceclock: #181715;
+
+  --textprimary: #fdfcfa;
+  --textsecondary: #969288;
+  --text-accent: #d1c9b7;
+  --textuniversalwhite: #fdfcf8;
+
+  --border-divider: #272725;
+  --icon-muted: #5f5b53;
+
+  color-scheme: dark;
+}
+
+/* 1039 и ниже: About и Gallery друг под другом, обе колонки 440 */
+@media (max-width: 1039px) {
+  :root {
+    --about-width: 440px;
+    --gallery-width: 440px;
+  }
+}

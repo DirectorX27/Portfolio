@@ -1,0 +1,28 @@
+/* main 1280×832 → Content: две колонки 300 + 560, gap 80, по центру */
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100svh;
+  overflow-x: clip; /* канвас галереи выходит за колонку на gallery.bleed */
+  background-color: var(--surfacebackground);
+}
+
+.content {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--column-gap);
+  flex: 1 1 auto;
+  width: 100%;
+}
+
+/* 1039 и ниже: колонки друг под другом, поля 16 по бокам */
+@media (max-width: 1039px) {
+  .content {
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    padding-inline: 16px;
+  }
+}

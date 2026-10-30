@@ -1,0 +1,10 @@
+/* avatar: 148×148, radius 20, cover */
+.avatar {
+  flex: 0 0 148px;
+  min-width: 0;
+  height: 148px;
+  border-radius: var(--radius-avatar);
+  object-fit: cover;
+  object-position: 50%;
+  background-color: var(--surfaceneutral);
+}

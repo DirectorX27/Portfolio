@@ -1,0 +1,58 @@
+/* button-theme: 32×32, radius 32, иконка 20 по центру */
+.root {
+  position: relative;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+}
+
+.button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 32px;
+  background-color: var(--surfaceneutral);
+  touch-action: manipulation;
+  transition: transform 0.1s ease;
+}
+
+.button:active,
+.root:active .button {
+  transform: scale(0.96);
+}
+
+.button svg {
+  width: 20px;
+  height: 20px;
+  fill: var(--icon-muted);
+  overflow: visible;
+}
+
+/* Слой для хаптика: ловит касания только на тач-устройствах */
+.haptic {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 32px;
+  pointer-events: none;
+}
+
+.haptic input {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  pointer-events: none;
+  touch-action: manipulation;
+  transform: translate(-50%, -50%) scale(4);
+}
+
+@media (pointer: coarse) {
+  .haptic,
+  .haptic input {
+    pointer-events: auto;
+  }
+}
