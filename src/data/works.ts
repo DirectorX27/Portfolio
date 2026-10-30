@@ -38,11 +38,10 @@ const order = [
   'Flooz.Go pro.mp4',
   'Voice Memo.mp4',
   'Flooz.Leaderboard.mp4',
-  'Hybrid Reach.Illustrations.webp',
+  'Voice Recorder.avif',
   'Flooz.Filters.mp4',
   'To-do widget.avif',
   'Flooz.Trending.mp4',
-  'Voice Recorder.avif',
 ];
 
 // Ссылка на кейс или своё описание для скринридера — по имени файла
