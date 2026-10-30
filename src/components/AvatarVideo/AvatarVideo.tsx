@@ -16,6 +16,7 @@ export function AvatarVideo() {
 
   // Цикл ведём сами: в Safari атрибут loop иногда замирает на последнем кадре.
   // Если браузер остановил видео (вкладка ушла в фон, экран погас), запускаем снова, когда страница видна.
+  // Сторож раз в секунду страхует случаи, когда Safari встаёт молча, без ended и pause.
   // При prefers-reduced-motion оставляем постер, видео не играет.
   useEffect(() => {
     const video = ref.current;
@@ -33,6 +34,15 @@ export function AvatarVideo() {
       if (video.paused) play();
     };
 
+    let last = -1;
+    const watchdog = window.setInterval(() => {
+      if (mq.matches || document.visibilityState !== 'visible' || video.readyState < 2) return;
+      const stuck = video.currentTime === last;
+      last = video.currentTime;
+      if (video.ended || (stuck && video.currentTime >= video.duration - 0.25)) restart();
+      else if (video.paused || stuck) play();
+    }, 1000);
+
     play();
     mq.addEventListener('change', play);
     video.addEventListener('ended', restart);
@@ -40,6 +50,7 @@ export function AvatarVideo() {
     document.addEventListener('visibilitychange', resume);
     window.addEventListener('pageshow', resume);
     return () => {
+      window.clearInterval(watchdog);
       mq.removeEventListener('change', play);
       video.removeEventListener('ended', restart);
       video.removeEventListener('pause', resume);
@@ -58,12 +69,13 @@ export function AvatarVideo() {
         autoPlay
         muted
         playsInline
-        preload="metadata"
+        preload="auto"
         aria-hidden="true"
         onPlaying={() => setPlaying(true)}
       >
-        <source src={avatar.videoWebm} type="video/webm" />
+        {/* mp4 (H.264) первым: Safari умеет и webm, но цикл в нём ненадёжен */}
         <source src={avatar.videoMp4} type="video/mp4" />
+        <source src={avatar.videoWebm} type="video/webm" />
       </video>
     </div>
   );
