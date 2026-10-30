@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Skeleton</title>
+<!-- Тема как на сайте: тот же ключ localStorage, ставим до отрисовки -->
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem('theme');
+      if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.dataset.theme = t;
+    } catch (e) {
+      document.documentElement.dataset.theme = 'light';
+    }
+  })();
+</script>
+<style>
+  @font-face { font-family: 'Inter'; src: url('../src/assets/fonts/InterVariable.ttf') format('truetype'); font-weight: 100 900; }
+
+  /* Токены портфолио (src/styles/tokens.css) */
+  :root {
+    --surfacebackground: #fdfcfa;
+    --surfaceneutral: #f7f5eb;
+    --surfaceneutral-hover: #ebe8db;
+    --textprimary: #262521;
+    --textsecondary: #666256;
+
+    --page-padding-block: 32px;
+    --column-gap: 80px;
+    --about-width: 300px;
+    --gallery-width: 560px;
+    --section-gap: 32px;
+
+    /* Скелетон: база — Neutral, блик — Neutral hover */
+    --sk-base: var(--surfaceneutral);
+    --sk-glint: var(--surfaceneutral-hover);
+    --sk-duration: 1.8s;
+    --radius-line: 4px;
+    color-scheme: light;
+  }
+  :root[data-theme='dark'] {
+    --surfacebackground: #0d0d0d;
+    --surfaceneutral: #181715;
+    --surfaceneutral-hover: #252422;
+    --textprimary: #fdfcfa;
+    --textsecondary: #969288;
+    color-scheme: dark;
+  }
+  @media (max-width: 1039px) {
+    :root { --about-width: 440px; --gallery-width: 440px; }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--surfacebackground);
+    color: var(--textprimary);
+    font: 15px/20px 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.2px;
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 200ms ease;
+  }
+  button { font: inherit; letter-spacing: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+
+  /*
+   * Переливание: у всех плашек один градиент, привязанный к окну (background-attachment: fixed),
+   * поэтому блик идёт одной волной по всей странице, а не отдельно в каждой плашке.
+   * В iOS Safari fixed не работает — там каждая плашка переливается сама, тоже ровно.
+   */
+  .sk {
+    background-color: var(--sk-base);
+    background-image: linear-gradient(
+      105deg,
+      transparent 0%,
+      transparent 38%,
+      var(--sk-glint) 47%,
+      var(--sk-glint) 53%,
+      transparent 62%,
+      transparent 100%
+    );
+    background-size: 250vw 100%;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    animation: shimmer var(--sk-duration) cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    transition: background-color 200ms ease;
+  }
+  @keyframes shimmer {
+    from { background-position: 125vw 0; }
+    to { background-position: -150vw 0; }
+  }
+  [data-paused] .sk { animation-play-state: paused; }
+
+  /* Нет движения — мягкая пульсация вместо блика */
+  @media (prefers-reduced-motion: reduce) {
+    .sk { background-image: none; animation: pulse 2.4s ease-in-out infinite; }
+    @keyframes pulse { 50% { opacity: 0.6; } }
+  }
+
+  /* Строка текста: в линии 20px плашка 12px, скругление 4 */
+  .line {
+    display: block;
+    height: 12px;
+    margin-block: 4px;
+    border-radius: var(--radius-line);
+  }
+  .line.s { height: 10px; margin-block: 5px; } /* body-s / caption */
+
+  /* ===== Страница: как Page.module.css ===== */
+  .page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100svh;
+    overflow-x: clip;
+  }
+  .content {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: var(--column-gap);
+    width: 100%;
+  }
+
+  /* ===== About ===== */
+  .about {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--section-gap);
+    flex-shrink: 0;
+    width: var(--about-width);
+    height: 100svh;
+    min-height: 640px;
+    padding-block: var(--page-padding-block);
+  }
+  .media { display: flex; gap: 4px; }
+  .avatar { flex: 0 0 148px; height: 148px; border-radius: 20px; }
+  .clock { flex: 0 0 148px; width: 148px; height: 148px; border-radius: 999px; }
+
+  .stack { display: flex; flex-direction: column; }
+  .bio { gap: 8px; }
+  .experience { gap: 4px; }
+
+  /* Список Experience: 4 строки × 48 = 192, плашки заполняют высоту с зазором 8 */
+  .rows { display: flex; flex-direction: column; gap: 8px; height: 192px; }
+  .logo { flex: 1 1 0; border-radius: 8px; }
+
+  .controls {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 16px;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .meta { display: flex; align-items: center; justify-content: space-between; }
+  .badge { width: 104px; height: 32px; border-radius: 41px; }
+  .toggle { width: 32px; height: 32px; border-radius: 32px; }
+  .button { width: 100%; height: 40px; border-radius: 12px; }
+
+  /* ===== Gallery: квадраты, radius 20, gap 32 ===== */
+  .gallery {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    flex-shrink: 0;
+    width: var(--gallery-width);
+    height: 100svh;
+    min-height: 640px;
+    padding-top: var(--page-padding-block);
+    overflow: hidden;
+  }
+  .card { flex-shrink: 0; width: 100%; aspect-ratio: 1; border-radius: 20px; }
+
+  /* 1039 и ниже: колонки друг под другом, поля 16 */
+  @media (max-width: 1039px) {
+    .content { flex-direction: column; align-items: center; gap: 0; padding-inline: 16px; }
+    .about { position: static; height: auto; min-height: 0; max-width: 100%; }
+    .controls { flex: 0 0 auto; margin-top: 32px; }
+    .button { height: 48px; }
+    .gallery {
+      position: static;
+      height: auto;
+      min-height: 0;
+      max-width: 100%;
+      gap: 24px;
+      padding-top: 0;
+      padding-bottom: var(--page-padding-block);
+      overflow: visible;
+    }
+  }
+
+  /* 471 и ниже: на всю ширину, аватар и часы — квадраты по половине */
+  @media (max-width: 471px) {
+    .about { width: 100%; padding-top: 16px; }
+    .media { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .media > * { width: auto; height: auto; aspect-ratio: 1; }
+    .gallery { width: 100%; padding-bottom: 40px; }
+  }
+
+  /* ===== Пульт демо-стенда ===== */
+  .panel {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 10;
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 999px;
+    background: var(--textprimary);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+  }
+  .panel button {
+    height: 32px;
+    padding-inline: 14px;
+    border-radius: 999px;
+    color: var(--surfacebackground);
+    font-size: 13px;
+  }
+  .panel button:hover { background: color-mix(in srgb, var(--surfacebackground) 14%, transparent); }
+</style>
+</head>
+<body>
+  <div class="page" aria-busy="true" aria-label="Загрузка">
+    <div class="content">
+      <aside class="about">
+        <div class="media">
+          <div class="sk avatar"></div>
+          <div class="sk clock"></div>
+        </div>
+
+        <!-- Intro: имя + «is a product designer» -->
+        <div class="stack">
+          <span class="sk line" style="width: 104px"></span>
+          <span class="sk line" style="width: 152px"></span>
+        </div>
+
+        <!-- Bio: заголовок + две строки -->
+        <div class="stack bio">
+          <span class="sk line" style="width: 48px"></span>
+          <div class="stack">
+            <span class="sk line" style="width: 100%"></span>
+            <span class="sk line" style="width: 62%"></span>
+          </div>
+        </div>
+
+        <!-- Experience: заголовок + 4 строки -->
+        <div class="stack experience">
+          <span class="sk line" style="width: 80px"></span>
+          <div class="rows">
+            <span class="sk logo"></span>
+            <span class="sk logo"></span>
+            <span class="sk logo"></span>
+            <span class="sk logo"></span>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="sk button"></div>
+          <div class="meta">
+            <span class="sk badge"></span>
+            <span class="sk toggle"></span>
+          </div>
+        </div>
+      </aside>
+
+      <main class="gallery">
+        <div class="sk card"></div>
+        <div class="sk card"></div>
+        <div class="sk card"></div>
+      </main>
+    </div>
+  </div>
+
+  <div class="panel" role="toolbar" aria-label="Демо">
+    <button type="button" id="theme">Тема</button>
+    <button type="button" id="pause">Пауза</button>
+  </div>
+
+  <script>
+    var root = document.documentElement;
+    document.getElementById('theme').onclick = function () {
+      var t = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = t;
+      try { localStorage.setItem('theme', t); } catch (e) {}
+    };
+    document.getElementById('pause').onclick = function () {
+      var paused = root.toggleAttribute('data-paused');
+      this.textContent = paused ? 'Пуск' : 'Пауза';
+    };
+  </script>
+</body>
+</html>

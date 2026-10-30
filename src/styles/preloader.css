@@ -1,0 +1,250 @@
+/*
+ * Прелоудер: скелетон страницы поверх #root, пока не готовы шрифты, аватар и первые карточки
+ * галереи (src/lib/ready.ts). Потом он гаснет, а страница проявляется целиком одним переходом.
+ * Подключён прямо в index.html, чтобы появиться до загрузки JS. Размеры — как у About и Gallery.
+ */
+
+:root {
+  --sk-base: var(--surfaceneutral);
+  --sk-glint: var(--surfaceneutral-hover);
+  --sk-duration: 1.8s;
+  --reveal-duration: 300ms;
+}
+
+/* Пока страница не готова, её не видно и не прокрутить */
+#root {
+  transition: opacity var(--reveal-duration) ease;
+}
+
+html:not([data-ready]) #root {
+  opacity: 0;
+}
+
+html:not([data-ready]) body {
+  overflow: hidden;
+}
+
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  overflow: hidden;
+  background-color: var(--surfacebackground);
+  transition: opacity var(--reveal-duration) ease;
+}
+
+html[data-ready] .preloader {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/*
+ * Переливание: у всех плашек один градиент, привязанный к окну (background-attachment: fixed),
+ * поэтому блик идёт одной волной по всей странице. В iOS Safari fixed не работает —
+ * там каждая плашка переливается сама.
+ */
+.sk {
+  background-color: var(--sk-base);
+  background-image: linear-gradient(
+    105deg,
+    transparent 0%,
+    transparent 38%,
+    var(--sk-glint) 47%,
+    var(--sk-glint) 53%,
+    transparent 62%,
+    transparent 100%
+  );
+  background-size: 250vw 100%;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  animation: sk-shimmer var(--sk-duration) cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@keyframes sk-shimmer {
+  from {
+    background-position: 125vw 0;
+  }
+  to {
+    background-position: -150vw 0;
+  }
+}
+
+/* Без движения — ровные плашки без блика (анимацию и так гасит global.css) */
+@media (prefers-reduced-motion: reduce) {
+  .sk {
+    background-image: none;
+  }
+}
+
+/* Строка текста: в линии 20px плашка 12px, скругление 4 */
+.sk-line {
+  display: block;
+  height: 12px;
+  margin-block: 4px;
+  border-radius: 4px;
+}
+
+/* ===== Сетка: как Page ===== */
+.sk-content {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--column-gap);
+  width: 100%;
+}
+
+/* ===== About ===== */
+.sk-about {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+  flex-shrink: 0;
+  width: var(--about-width);
+  height: 100svh;
+  min-height: 640px;
+  padding-block: var(--page-padding-block);
+}
+
+.sk-media {
+  display: flex;
+  gap: 4px;
+}
+
+.sk-avatar {
+  flex: 0 0 148px;
+  height: 148px;
+  border-radius: var(--radius-avatar);
+}
+
+.sk-clock {
+  flex: 0 0 148px;
+  height: 148px;
+  border-radius: var(--radius-pill);
+}
+
+.sk-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.sk-bio {
+  gap: 8px;
+}
+
+.sk-experience {
+  gap: 4px;
+}
+
+/* Список Experience: 4 строки × 48 = 192, плашки заполняют высоту с зазором 8 */
+.sk-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 192px;
+}
+
+.sk-row {
+  flex: 1 1 0;
+  border-radius: var(--radius-logo);
+}
+
+.sk-controls {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 16px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sk-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sk-badge {
+  width: 104px;
+  height: 32px;
+  border-radius: 41px;
+}
+
+.sk-toggle {
+  width: 32px;
+  height: 32px;
+  border-radius: 32px;
+}
+
+.sk-button {
+  height: 40px;
+  border-radius: var(--radius-button);
+}
+
+/* ===== Gallery: квадраты без подписей ===== */
+.sk-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  flex-shrink: 0;
+  width: var(--gallery-width);
+  padding-top: var(--page-padding-block);
+}
+
+.sk-card {
+  flex-shrink: 0;
+  aspect-ratio: 1;
+  border-radius: 20px;
+}
+
+/* 1039 и ниже: колонки друг под другом, поля 16 */
+@media (max-width: 1039px) {
+  .sk-content {
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    padding-inline: 16px;
+  }
+
+  .sk-about {
+    height: auto;
+    min-height: 0;
+    max-width: 100%;
+  }
+
+  .sk-controls {
+    flex: 0 0 auto;
+    margin-top: 32px;
+  }
+
+  .sk-button {
+    height: 48px;
+  }
+
+  .sk-gallery {
+    max-width: 100%;
+    gap: 24px;
+    padding-top: 0;
+  }
+}
+
+/* 471 и ниже: на всю ширину, аватар и часы — квадраты по половине */
+@media (max-width: 471px) {
+  .sk-about {
+    width: 100%;
+    padding-top: 16px;
+  }
+
+  .sk-media {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sk-media > * {
+    height: auto;
+    aspect-ratio: 1;
+  }
+
+  .sk-gallery {
+    width: 100%;
+  }
+}

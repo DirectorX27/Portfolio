@@ -1,9 +1,17 @@
 import { useEffect, useRef } from 'react';
 import { avatar, profile } from '@/config/site';
+import { waitFor } from '@/lib/ready';
 import styles from './AvatarVideo.module.css';
 
 export function AvatarVideo() {
   const ref = useRef<HTMLVideoElement>(null);
+
+  // Прелоудер ждёт постер: видео потом стартует с того же кадра
+  useEffect(() => {
+    const img = new Image();
+    img.src = avatar.poster;
+    waitFor(img.decode());
+  }, []);
 
   // Уважаем prefers-reduced-motion: оставляем постер, видео не играет
   useEffect(() => {

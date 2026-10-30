@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { Weather } from '@/hooks/useWeather';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { waitFor } from '@/lib/ready';
 import { clearSky, sceneFromWMO } from './sky/scenes';
 import { moonPhase, sunPosition } from './sky/sun';
 import { SkyRenderer, type SkyState } from './sky/SkyRenderer';
@@ -54,6 +55,8 @@ export function useSky({ weather, latitude, longitude }: Options) {
       return;
     }
     rendererRef.current = renderer;
+    // Прелоудер ждёт, пока небо отрисует первый кадр
+    waitFor(new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
 
     let visible = true;
     let raf = 0;

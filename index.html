@@ -19,9 +19,54 @@
         }
       })();
     </script>
+    <!-- Токены и прелоудер грузим из HTML, а не из JS: скелетон виден сразу, до загрузки скрипта -->
+    <link rel="stylesheet" href="/src/styles/tokens.css" />
+    <link rel="stylesheet" href="/src/styles/preloader.css" />
   </head>
   <body>
     <div id="root"></div>
+    <!-- Скелетон страницы: убирает src/lib/ready.ts, когда всё на первом экране загрузилось -->
+    <div class="preloader" id="preloader" aria-hidden="true">
+      <div class="sk-content">
+        <div class="sk-about">
+          <div class="sk-media">
+            <div class="sk sk-avatar"></div>
+            <div class="sk sk-clock"></div>
+          </div>
+          <div class="sk-stack">
+            <span class="sk sk-line" style="width: 104px"></span>
+            <span class="sk sk-line" style="width: 152px"></span>
+          </div>
+          <div class="sk-stack sk-bio">
+            <span class="sk sk-line" style="width: 48px"></span>
+            <div class="sk-stack">
+              <span class="sk sk-line" style="width: 100%"></span>
+              <span class="sk sk-line" style="width: 62%"></span>
+            </div>
+          </div>
+          <div class="sk-stack sk-experience">
+            <span class="sk sk-line" style="width: 80px"></span>
+            <div class="sk-rows">
+              <span class="sk sk-row"></span>
+              <span class="sk sk-row"></span>
+              <span class="sk sk-row"></span>
+              <span class="sk sk-row"></span>
+            </div>
+          </div>
+          <div class="sk-controls">
+            <div class="sk sk-button"></div>
+            <div class="sk-meta">
+              <span class="sk sk-badge"></span>
+              <span class="sk sk-toggle"></span>
+            </div>
+          </div>
+        </div>
+        <div class="sk-gallery">
+          <div class="sk sk-card"></div>
+          <div class="sk sk-card"></div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

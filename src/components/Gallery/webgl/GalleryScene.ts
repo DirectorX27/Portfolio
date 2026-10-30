@@ -62,6 +62,8 @@ export class GalleryScene {
   private time = 0;
   private destroyed = false;
   private cleanups: Array<() => void> = [];
+  private loads: Promise<void>[] = []; // декодирование картинки или постера, по индексу работы
+  readonly ready: Promise<unknown>; // всё, что видно на первом экране, — его ждёт прелоудер
 
   constructor(
     private container: HTMLElement,
@@ -88,9 +90,25 @@ export class GalleryScene {
     this.strength = this.columns.map(() => 0);
     this.entries = works.map((work) => this.createEntry(work));
 
-    this.listen();
+    const font = this.listen();
     this.resize();
+    this.ready = Promise.all([font, ...this.firstScreen().map((i) => this.loads[i])]);
     this.raf = requestAnimationFrame(this.update);
+  }
+
+  // Работы, которые видны сразу: в каждой колонке сверху, пока не кончится высота экрана
+  private firstScreen() {
+    if (!this.colWidth) return this.columns.map((indices) => indices[0]);
+    return this.columns.flatMap((indices) => {
+      const visible: number[] = [];
+      let top = gallery.paddingTop;
+      for (const i of indices) {
+        if (top >= this.screen.height) break;
+        visible.push(i);
+        top += cardHeight(this.entries[i].work, this.colWidth) + gallery.rowGap;
+      }
+      return visible;
+    });
   }
 
   setReducedMotion(reduced: boolean) {
@@ -205,16 +223,20 @@ export class GalleryScene {
       const img = new Image();
       img.decoding = 'async';
       img.src = still;
-      img
-        .decode()
-        .then(() => {
-          if (this.destroyed) return;
-          entry.image = img;
-          this.redraw(entry);
-        })
-        .catch(() => {
-          // файл не загрузился — остаётся плашка
-        });
+      this.loads.push(
+        img
+          .decode()
+          .then(() => {
+            if (this.destroyed) return;
+            entry.image = img;
+            this.redraw(entry);
+          })
+          .catch(() => {
+            // файл не загрузился — остаётся плашка
+          }),
+      );
+    } else {
+      this.loads.push(Promise.resolve());
     }
     return entry;
   }
@@ -444,16 +466,16 @@ export class GalleryScene {
     });
     mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
-    // Перерисовать подписи, когда догрузится шрифт
-    document.fonts
-      .load(`${gallery.caption.fontSize}px 'Inter Display Static'`)
-      .then(this.redrawAll)
-      .catch(() => {});
-
     this.cleanups.push(
       () => window.removeEventListener('wheel', onWheel),
       () => ro.disconnect(),
       () => mo.disconnect(),
     );
+
+    // Перерисовать подписи, когда догрузится шрифт
+    return document.fonts
+      .load(`${gallery.caption.fontSize}px 'Inter Display Static'`)
+      .then(this.redrawAll)
+      .catch(() => {});
   }
 }
