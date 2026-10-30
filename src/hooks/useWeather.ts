@@ -91,7 +91,7 @@ function wmoFromSymbol(symbol: string): number {
   return 0;
 }
 
-// Запасной источник: met.no (Норвегия) — на случай, когда Open-Meteo недоступен, например из РФ
+// Второй источник: met.no (Норвегия) — отвечает и там, где Open-Meteo недоступен, например из РФ
 async function fromMetNo(latitude: number, longitude: number, signal: AbortSignal): Promise<Weather> {
   const data = await getJson<{
     properties?: {
@@ -117,7 +117,7 @@ async function fromMetNo(latitude: number, longitude: number, signal: AbortSigna
   };
 }
 
-// Текущая погода: Open-Meteo, при ошибке — met.no (оба без ключа). null — данных ещё нет.
+// Текущая погода: первый ответ от Open-Meteo или met.no (оба без ключа). null — данных ещё нет.
 export function useWeather({ latitude, longitude, refreshMs, cacheKey }: Options): Weather | null {
   const [weather, setWeather] = useState<Weather | null>(() => {
     const cached = readCache(cacheKey);
@@ -134,13 +134,19 @@ export function useWeather({ latitude, longitude, refreshMs, cacheKey }: Options
         return;
       }
       try {
+        // Спрашиваем оба источника сразу и берём первый ответ, второй запрос отменяем
+        const race = new AbortController();
+        const abortRace = () => race.abort();
+        controller.signal.addEventListener('abort', abortRace);
         let value: Weather;
         try {
-          value = await fromOpenMeteo(latitude, longitude, controller.signal);
-        } catch (err) {
-          if (controller.signal.aborted) throw err;
-          console.warn('[weather] Open-Meteo failed, trying met.no', err);
-          value = await fromMetNo(latitude, longitude, controller.signal);
+          value = await Promise.any([
+            fromOpenMeteo(latitude, longitude, race.signal),
+            fromMetNo(latitude, longitude, race.signal),
+          ]);
+        } finally {
+          race.abort();
+          controller.signal.removeEventListener('abort', abortRace);
         }
         setWeather(value);
         writeCache(cacheKey, { ...value, fetchedAt: Date.now() });

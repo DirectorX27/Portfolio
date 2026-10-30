@@ -26,7 +26,7 @@ Page (.page, min-height 100svh, фон --surfacebackground)
 | Блок | Источник | Обновление |
 |---|---|---|
 | Время | `Intl.DateTimeFormat` с `timeZone: 'Europe/Moscow'` | ровно на смене минуты + при возврате во вкладку |
-| Погода | Open-Meteo `current=temperature_2m,weather_code,cloud_cover,wind_speed_10m` (без API-ключа); при ошибке или таймауте 6 с — запасной met.no `locationforecast/2.0/compact` (символ → код WMO) | раз в 15 мин, кэш в `localStorage` (`weather:msk:v2`) |
+| Погода | Open-Meteo `current=temperature_2m,weather_code,cloud_cover,wind_speed_10m` (без API-ключа); параллельно с ним met.no `locationforecast/2.0/compact` (символ → код WMO), берётся первый ответ, таймаут 6 с | раз в 15 мин, кэш в `localStorage` (`weather:msk:v2`) |
 | Небо в часах | `Clock/sky/`: WebGL-шейдер (небо, звёзды, луна с фазой по дате, облака, туман) + 2D-канвас (дождь, снег). Цвет по высоте солнца над Москвой, сцена по коду WMO | солнце раз в 30 с, смена погоды перетекает плавно |
 | Тема | `data-theme` на `<html>` | инлайн-скрипт в `index.html` до отрисовки, без вспышки |
 
