@@ -38,7 +38,7 @@ const order = [
   'Flooz.Go pro.mp4',
   'Voice Memo.mp4',
   'Flooz.Leaderboard.mp4',
-  'Hybrid Reach.Illustrations.avif',
+  'Hybrid Reach.Illustrations.webp',
   'Flooz.Filters.mp4',
   'To-do widget.avif',
   'Flooz.Trending.mp4',
