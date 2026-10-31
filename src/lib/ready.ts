@@ -14,12 +14,22 @@ const FONTS = [
   '400 11px "Matrix Sans Print"',
 ];
 
+// WebGL-галерея открывается отдельно от страницы: её скелетон ждёт первый кадр первого видео,
+// но не дольше этого от начала загрузки — потом лента показывается с постером
+const GALLERY_MAX_MS = 6000;
+
 const pending: Promise<unknown>[] = [];
+let gallery: Promise<unknown> | null = null;
 let started = false;
 
 export function waitFor(promise: Promise<unknown>) {
   // Ошибка загрузки не держит прелоудер: на месте файла останется плашка
   pending.push(promise.catch(() => {}));
+}
+
+// Чего ждёт скелетон галереи. Если никто не позвал (мобильный список), галерея открывается вместе со страницей
+export function waitForGallery(promise: Promise<unknown>) {
+  gallery = promise.catch(() => {});
 }
 
 // Картинка из DOM загрузилась (или не смогла). decode() у картинки в DOM может зависнуть,
@@ -44,14 +54,22 @@ export function reveal() {
   const loaded = Promise.all([...fonts, ...pending]);
   const enough = Promise.all([loaded, delay(MIN_MS - performance.now())]);
 
-  Promise.race([enough, delay(MAX_MS - performance.now())]).then(() => {
-    const root = document.documentElement;
+  const root = document.documentElement;
+  const page = Promise.race([enough, delay(MAX_MS - performance.now())]).then(() => {
     root.dataset.ready = '';
-    const preloader = document.getElementById('preloader');
-    if (!preloader) return;
-    const remove = () => preloader.remove();
-    preloader.addEventListener('transitionend', remove, { once: true });
-    // Страховка, если transitionend не придёт (фоновая вкладка)
-    setTimeout(remove, 1000);
   });
+  // Галерея — не раньше страницы, чтобы её скелетон не гас первым. Чего ждать, смотрим, когда страница
+  // готова: сцену могли пересоздать (StrictMode в разработке), и ожидание старой уже не сбудется
+  page
+    .then(() => gallery && Promise.race([gallery, delay(GALLERY_MAX_MS - performance.now())]))
+    .then(() => {
+      root.dataset.galleryReady = '';
+      const preloader = document.getElementById('preloader');
+      if (!preloader) return;
+      const remove = () => preloader.remove();
+      // Свой переход, а не всплывший от плашек внутри
+      preloader.addEventListener('transitionend', (e) => e.target === preloader && remove());
+      // Страховка, если transitionend не придёт (фоновая вкладка)
+      setTimeout(remove, 1000);
+    });
 }

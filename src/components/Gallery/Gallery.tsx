@@ -4,7 +4,7 @@ import { works } from '@/data/works';
 import { gallery } from '@/config/site';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { waitFor } from '@/lib/ready';
+import { waitForGallery } from '@/lib/ready';
 import { ContactLinks } from '@/components/ContactLinks/ContactLinks';
 import { WorkList } from './WorkList';
 import { GalleryScene } from './webgl/GalleryScene';
@@ -24,7 +24,8 @@ export function Gallery() {
     if (!webgl || !stageRef.current) return;
     const scene = new GalleryScene(stageRef.current, works, reduced);
     sceneRef.current = scene;
-    waitFor(scene.ready);
+    // Ленту ждёт свой скелетон, страница открывается, не дожидаясь её
+    waitForGallery(scene.ready);
     return () => {
       scene.destroy();
       sceneRef.current = null;

@@ -72,7 +72,9 @@ export class GalleryScene {
   private cleanups: Array<() => void> = [];
   private loads: Promise<void>[] = []; // декодирование картинки или постера, по индексу работы
   private videos = false; // первый экран готов — можно грузить видео
-  readonly ready: Promise<unknown>; // всё, что видно на первом экране, — его ждёт прелоудер
+  private lead: Entry | undefined; // видео верхней карточки: грузится сразу, его первый кадр ждёт скелетон
+  private resolveLead?: () => void;
+  readonly ready: Promise<unknown>; // первый экран вместе с первым кадром lead — его ждёт скелетон галереи
 
   constructor(
     private container: HTMLElement,
@@ -104,9 +106,13 @@ export class GalleryScene {
     // Картинки ниже первого экрана уступают сеть первому экрану и аватару
     const first = this.firstScreen();
     this.loads = this.entries.map((e, i) => this.loadStill(e, first.includes(i) ? 'auto' : 'low'));
-    this.ready = Promise.all([font, ...first.map((i) => this.loads[i])]);
-    // Видео тяжелее всего остального вместе взятого, поэтому ждут, пока первый экран покажется
-    this.ready.then(() => (this.videos = true));
+    const stills = Promise.all([font, ...first.map((i) => this.loads[i])]);
+    // Остальные видео тяжелее всего остального вместе взятого, поэтому ждут, пока первый экран загрузится
+    stills.then(() => (this.videos = true));
+    const top = this.entries[first[0]];
+    this.lead = top?.video ? top : undefined;
+    const lead = this.lead ? new Promise<void>((resolve) => (this.resolveLead = resolve)) : null;
+    this.ready = Promise.all([stills, lead]);
     this.raf = requestAnimationFrame(this.update);
   }
 
@@ -139,11 +145,11 @@ export class GalleryScene {
     else if (!play && !video.paused) video.pause();
   };
 
-  // Видео грузятся по очереди: когда карточка подъезжает к экрану и её постер уже на месте.
+  // Видео грузятся по очереди: lead — сразу, остальные — когда первый экран загружен,
+  // карточка подъезжает к экрану и её постер уже на месте.
   // Следующее ждёт, пока предыдущее начнёт играть, но не дольше VIDEO_WAIT — иначе
   // на медленной сети одно тяжёлое видео держит все остальные.
   private loadNextVideo() {
-    if (!this.videos) return;
     const now = performance.now();
     const busy = this.entries.some(
       (e) =>
@@ -156,7 +162,8 @@ export class GalleryScene {
     if (busy) return;
     let next: Entry | undefined;
     for (const e of this.entries) {
-      if (!e.visible || !e.still || !e.video || e.video.getAttribute('src')) continue;
+      if (!e.visible || !e.video || e.video.getAttribute('src')) continue;
+      if (e !== this.lead && (!this.videos || !e.still)) continue;
       if (!next || e.distance < next.distance) next = e;
     }
     if (!next?.video || !next.work.src) return;
@@ -447,6 +454,12 @@ export class GalleryScene {
     this.loadNextVideo();
 
     this.renderer.render({ scene: this.scene, camera: this.camera });
+
+    // Первый кадр lead только что ушёл в текстуру и нарисован — скелетон галереи можно убирать
+    if (this.resolveLead && this.lead?.program.uniforms.uVideo.value === 1) {
+      this.resolveLead();
+      this.resolveLead = undefined;
+    }
   };
 
   private hit(e: PointerEvent): Item | undefined {

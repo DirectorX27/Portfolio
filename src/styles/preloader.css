@@ -30,12 +30,34 @@ html:not([data-ready]) body {
   z-index: 100;
   overflow: hidden;
   background-color: var(--surfacebackground);
+  transition:
+    opacity var(--reveal-duration) ease,
+    background-color var(--reveal-duration) ease;
+}
+
+/* Страница готова: фон и левая часть скелетона гаснут, плашки галереи остаются,
+   пока лента не готова (на десктопе — первый кадр первого видео, см. src/lib/ready.ts) */
+html[data-ready] .preloader {
+  background-color: transparent;
+  pointer-events: none;
+}
+
+html[data-ready] .sk-about {
+  opacity: 0;
   transition: opacity var(--reveal-duration) ease;
 }
 
-html[data-ready] .preloader {
+html[data-gallery-ready] .preloader {
   opacity: 0;
-  pointer-events: none;
+}
+
+/* Лента под скелетоном не видна и проявляется вместе с его исчезновением */
+[data-slot='gallery-canvas'] {
+  transition: opacity var(--reveal-duration) ease;
+}
+
+html:not([data-gallery-ready]) [data-slot='gallery-canvas'] {
+  opacity: 0;
 }
 
 /*
