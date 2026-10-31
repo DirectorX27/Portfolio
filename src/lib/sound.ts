@@ -2,7 +2,6 @@
 let ctx: AudioContext | null = null;
 
 function audio(): AudioContext | null {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return null;
   try {
     ctx ??= new AudioContext();
     if (ctx.state === 'suspended') void ctx.resume();

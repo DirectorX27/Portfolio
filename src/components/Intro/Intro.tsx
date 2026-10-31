@@ -1,6 +1,5 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { contactGradient, profile } from '@/config/site';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
 import styles from './Intro.module.css';
 
 // Как часто сменяется слово
@@ -17,7 +16,6 @@ const meshColors = Object.fromEntries(
 
 export function Intro() {
   const { roles, roleSuffix } = profile;
-  const reduced = useReducedMotion();
   const [step, setStep] = useState(0);
   const current = roles[step % roles.length];
   const roleRef = useRef<HTMLSpanElement>(null);
@@ -40,7 +38,7 @@ export function Intro() {
     // Снимаем ширину, оставшуюся от прошлой смены: в фоновой вкладке transitionend может не прийти,
     // и тогда новое слово замерялось бы по старой ширине и наезжало на «designer»
     el.style.width = '';
-    if (from === null || reduced) return;
+    if (from === null) return;
     const to = el.getBoundingClientRect().width;
     if (Math.abs(to - from) < 0.5) return;
     el.style.width = `${from}px`;
@@ -55,7 +53,7 @@ export function Intro() {
       window.clearTimeout(timer);
       reset();
     };
-  }, [step, reduced]);
+  }, [step]);
 
   return (
     <section className={styles.intro} aria-labelledby="intro-title">
@@ -70,7 +68,7 @@ export function Intro() {
             {/* key={step}: при смене слова буквы монтируются заново и анимация проявления стартует с начала.
                 На первом показе (step 0) слово стоит без анимации */}
             <Fragment key={step}>
-              {reduced || step === 0
+              {step === 0
                 ? current
                 : [...current].map((letter, i) => (
                     <span key={i} className={styles.letter} style={{ animationDelay: `${i * LETTER_STAGGER_MS}ms` }}>

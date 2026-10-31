@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import type { Weather } from '@/hooks/useWeather';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { waitFor } from '@/lib/ready';
 import { clearSky, sceneFromWMO } from './sky/scenes';
 import { moonPhase, sunPosition } from './sky/sun';
@@ -29,12 +28,11 @@ function stateOf(weather: Weather | null, latitude: number, longitude: number): 
 }
 
 // Подключает небо к двум канвасам: skyRef — WebGL-фон, fxRef — дождь и снег поверх.
-// При reduced motion рисует статичный кадр, вне экрана не рисует вовсе.
+// Вне экрана не рисует.
 export function useSky({ weather, latitude, longitude }: Options) {
   const skyRef = useRef<HTMLCanvasElement>(null);
   const fxRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<SkyRenderer | null>(null);
-  const reduced = useReducedMotion();
 
   // Актуальные данные для таймера и первого кадра, без перезапуска эффекта
   const latest = useRef({ weather, latitude, longitude });
@@ -61,7 +59,6 @@ export function useSky({ weather, latitude, longitude }: Options) {
     let visible = true;
     let raf = 0;
     let last = performance.now();
-    const still = () => renderer.frame(0);
 
     const loop = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
@@ -72,7 +69,6 @@ export function useSky({ weather, latitude, longitude }: Options) {
 
     const resize = new ResizeObserver(([entry]) => {
       renderer.resize(entry.contentRect.width);
-      if (reduced) still();
     });
     resize.observe(sky);
 
@@ -83,10 +79,9 @@ export function useSky({ weather, latitude, longitude }: Options) {
 
     const sunTimer = window.setInterval(() => {
       renderer.set(current());
-      if (reduced) still();
     }, SUN_REFRESH_MS);
 
-    if (!reduced) raf = requestAnimationFrame(loop);
+    raf = requestAnimationFrame(loop);
 
     return () => {
       cancelAnimationFrame(raf);
@@ -96,16 +91,15 @@ export function useSky({ weather, latitude, longitude }: Options) {
       renderer.destroy();
       rendererRef.current = null;
     };
-    // current() читает latest — пересоздаём рендер только при смене reduced motion
-  }, [reduced]);
+    // current() читает latest, поэтому рендер создаётся один раз
+  }, []);
 
   // Новая погода: небо плавно перетекает в новую сцену
   useEffect(() => {
     const renderer = rendererRef.current;
     if (!renderer) return;
     renderer.set(stateOf(weather, latitude, longitude));
-    if (reduced) renderer.frame(0);
-  }, [weather, latitude, longitude, reduced]);
+  }, [weather, latitude, longitude]);
 
   return { skyRef, fxRef };
 }

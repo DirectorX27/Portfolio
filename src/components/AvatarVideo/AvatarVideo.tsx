@@ -18,14 +18,11 @@ export function AvatarVideo() {
   // Цикл ведём сами: в Safari атрибут loop иногда замирает на последнем кадре.
   // Если браузер остановил видео (вкладка ушла в фон, экран погас), запускаем снова, когда страница видна.
   // Сторож раз в секунду страхует случаи, когда Safari встаёт молча, без ended и pause.
-  // При prefers-reduced-motion оставляем постер, видео не играет.
   useEffect(() => {
     const video = ref.current;
     if (!video) return;
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
     const play = () => {
-      if (mq.matches) video.pause();
-      else if (document.visibilityState === 'visible') video.play().catch(() => {});
+      if (document.visibilityState === 'visible') video.play().catch(() => {});
     };
     const restart = () => {
       video.currentTime = 0;
@@ -37,7 +34,7 @@ export function AvatarVideo() {
 
     let last = -1;
     const watchdog = window.setInterval(() => {
-      if (mq.matches || document.visibilityState !== 'visible' || video.readyState < 2) return;
+      if (document.visibilityState !== 'visible' || video.readyState < 2) return;
       const stuck = video.currentTime === last;
       last = video.currentTime;
       if (video.ended || (stuck && video.currentTime >= video.duration - 0.25)) restart();
@@ -45,14 +42,12 @@ export function AvatarVideo() {
     }, 1000);
 
     play();
-    mq.addEventListener('change', play);
     video.addEventListener('ended', restart);
     video.addEventListener('pause', resume);
     document.addEventListener('visibilitychange', resume);
     window.addEventListener('pageshow', resume);
     return () => {
       window.clearInterval(watchdog);
-      mq.removeEventListener('change', play);
       video.removeEventListener('ended', restart);
       video.removeEventListener('pause', resume);
       document.removeEventListener('visibilitychange', resume);

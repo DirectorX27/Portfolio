@@ -4,7 +4,6 @@ import { MeshGradient } from '@paper-design/shaders-react';
 import type { PaperShaderElement } from '@paper-design/shaders';
 import { contactGradient, contactShortcut, contactSplash, contacts } from '@/config/site';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { playConnectSound } from '@/lib/sound';
 import styles from './ContactButton.module.css';
 
@@ -27,7 +26,6 @@ function isTypingTarget(target: EventTarget | null) {
 }
 
 export function ContactButton() {
-  const reduced = useReducedMotion();
   const desktop = useMediaQuery('(min-width: 1040px)');
   const offsetY = desktop ? 44 : 52;
   const [open, setOpen] = useState(false);
@@ -44,7 +42,7 @@ export function ContactButton() {
       animate(overlayRef.current, { opacity: [0, 1, 0] }, { duration: contactSplash.overlayDuration, times: [0, 0.15, 1], ease: 'easeOut' });
     }
     const mount = buttonRef.current?.querySelector<PaperShaderElement>('[data-paper-shader]')?.paperShaderMount;
-    if (!mount || reduced) return;
+    if (!mount) return;
     const lerp = (from: number, to: number, k: number) => from + (to - from) * k;
     animate(0, [0, 1, 0], {
       duration: contactSplash.duration,
@@ -58,7 +56,7 @@ export function ContactButton() {
         });
       },
     });
-  }, [reduced]);
+  }, []);
 
   const toggle = useCallback(() => {
     playConnectSound(!open);
@@ -90,7 +88,7 @@ export function ContactButton() {
   }, [toggle]);
 
   return (
-    <MotionConfig reducedMotion="user" transition={spring}>
+    <MotionConfig transition={spring}>
       <div ref={rootRef} className={styles.root}>
         <AnimatePresence>
           {open && (
@@ -128,7 +126,7 @@ export function ContactButton() {
           <MeshGradient
             className={styles.gradient}
             colors={[...contactGradient.colors]}
-            speed={reduced ? 0 : contactGradient.speed}
+            speed={contactGradient.speed}
             scale={contactGradient.scale}
             distortion={contactGradient.distortion}
             swirl={contactGradient.swirl}

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { altOf, captionOf, isVideo, type Work } from '@/data/works';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { gallery } from '@/config/site';
 import { imageLoaded, waitFor } from '@/lib/ready';
 import { fallback } from '@/lib/media';
@@ -102,19 +101,14 @@ function Still({ work, src, alt, eager }: { work: Work; src: string; alt: string
 }
 
 // Видео без звука по кругу: грузится и играет, только пока на экране.
-// Под ним постер-картинка; видео проявляется, когда пошли кадры. При reduced-motion не запускается.
+// Под ним постер-картинка; видео проявляется, когда пошли кадры.
 function WorkVideo({ work }: { work: Work }) {
   const ref = useRef<HTMLVideoElement>(null);
-  const reduced = useReducedMotion();
   const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
     const video = ref.current;
     if (!video) return;
-    if (reduced) {
-      video.pause();
-      return;
-    }
     const io = new IntersectionObserver(
       ([e]) => {
         if (e.isIntersecting) video.play().catch(() => {});
@@ -124,7 +118,7 @@ function WorkVideo({ work }: { work: Work }) {
     );
     io.observe(video);
     return () => io.disconnect();
-  }, [reduced]);
+  }, []);
 
   return (
     <video

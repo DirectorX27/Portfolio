@@ -179,7 +179,7 @@ export class SkyRenderer {
     if (instant) this.cur = { ...state };
   }
 
-  // dt = 0 — статичный кадр (reduced motion): состояние сразу встаёт в цель
+  // dt = 0 — статичный кадр: состояние сразу встаёт в цель
   frame(dt: number) {
     if (!this.size) return;
     const k = dt > 0 ? 1 - Math.exp(-dt * 2.5) : 1;

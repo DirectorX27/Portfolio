@@ -131,16 +131,16 @@ export class GalleryScene {
     });
   }
 
+  // Уменьшенное движение выключает только дрейф и изгиб ленты, видео играют как обычно
   setReducedMotion(reduced: boolean) {
     this.reduced = reduced;
-    this.entries.forEach(this.syncVideo);
   }
 
-  // Видео играет, только пока карточка видна. При reduced-motion стоит на месте.
+  // Видео играет, только пока карточка видна
   private syncVideo = (entry: Entry) => {
     const { video } = entry;
     if (!video?.getAttribute('src')) return;
-    const play = entry.visible && !this.reduced;
+    const play = entry.visible;
     if (play && video.paused) video.play().catch(() => {});
     else if (!play && !video.paused) video.pause();
   };

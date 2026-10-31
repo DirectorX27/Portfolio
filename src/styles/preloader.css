@@ -91,13 +91,6 @@ html:not([data-gallery-ready]) [data-slot='gallery-canvas'] {
   }
 }
 
-/* Без движения — ровные плашки без блика (анимацию и так гасит global.css) */
-@media (prefers-reduced-motion: reduce) {
-  .sk {
-    background-image: none;
-  }
-}
-
 /* Строка текста: в линии 20px плашка 12px, скругление 4 */
 .sk-line {
   display: block;
