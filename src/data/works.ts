@@ -1,4 +1,5 @@
 import files from 'virtual:works';
+import { media } from '@/lib/media';
 
 // Работы в галерее — всё, что лежит в public/works (список и размеры собирает vite/works.ts).
 // Чтобы добавить работу, достаточно положить файл в папку. Постер к видео — «Имя.poster.jpg».
@@ -54,5 +55,10 @@ const rank = (work: Work) => {
 };
 
 export const works: Work[] = files
-  .map((work) => ({ ...work, ...extras[fileOf(work)] }))
+  .map((work) => ({
+    ...work,
+    src: media(work.src),
+    poster: work.poster && media(work.poster),
+    ...extras[fileOf(work)],
+  }))
   .sort((a, b) => rank(a) - rank(b) || fileOf(a).localeCompare(fileOf(b)));

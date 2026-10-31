@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { avatar, profile } from '@/config/site';
 import { imageLoaded, waitFor } from '@/lib/ready';
+import { fallback, fromCdn, local } from '@/lib/media';
 import styles from './AvatarVideo.module.css';
 
 // Постер — обычная картинка под видео: Safari рисует poster у <video> с задержкой,
@@ -61,7 +62,7 @@ export function AvatarVideo() {
 
   return (
     <div className={styles.avatar} role="img" aria-label={`${profile.name}, portrait`}>
-      <img ref={imgRef} className={styles.layer} src={avatar.poster} alt="" />
+      <img ref={imgRef} className={styles.layer} src={avatar.poster} alt="" onError={fallback} />
       <video
         ref={ref}
         className={styles.layer}
@@ -73,9 +74,11 @@ export function AvatarVideo() {
         aria-hidden="true"
         onPlaying={() => setPlaying(true)}
       >
-        {/* mp4 (H.264) первым: Safari умеет и webm, но цикл в нём ненадёжен */}
+        {/* mp4 (H.264) первым: Safari умеет и webm, но цикл в нём ненадёжен.
+            Если CDN не ответил, браузер сам перейдёт к тому же файлу с сайта */}
         <source src={avatar.videoMp4} type="video/mp4" />
-        <source src={avatar.videoWebm} type="video/webm" />
+        {fromCdn(avatar.videoMp4) && <source src={local(avatar.videoMp4)} type="video/mp4" />}
+        <source src={local(avatar.videoWebm)} type="video/webm" />
       </video>
     </div>
   );

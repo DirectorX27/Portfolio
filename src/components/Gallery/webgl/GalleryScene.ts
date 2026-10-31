@@ -2,6 +2,7 @@ import { Camera, Mesh, Plane, Program, Renderer, Texture, Transform } from 'ogl'
 import type { OGLRenderingContext } from 'ogl';
 import { isVideo, type Work } from '@/data/works';
 import { gallery } from '@/config/site';
+import { fromCdn, local } from '@/lib/media';
 import { distribute } from '../layout';
 import { cardHeight, drawCard, imageHeight, readPalette, toRgb, type Palette } from './card';
 import vertex from './shaders/vertex.glsl?raw';
@@ -159,7 +160,8 @@ export class GalleryScene {
       if (!next || e.distance < next.distance) next = e;
     }
     if (!next?.video || !next.work.src) return;
-    next.video.src = next.work.src;
+    // После обрыва пробуем тот же файл с сайта: вдруг не отвечает именно CDN
+    next.video.src = next.retries ? local(next.work.src) : next.work.src;
     next.started = now;
     this.syncVideo(next);
   }
@@ -282,9 +284,17 @@ export class GalleryScene {
     const img = new Image();
     img.decoding = 'async';
     img.fetchPriority = priority;
+    // Картинка с CDN уходит в WebGL-текстуру, а для этого нужен CORS
+    img.crossOrigin = 'anonymous';
     img.src = still;
     return img
       .decode()
+      .catch(() => {
+        // CDN не ответил — тот же файл с сайта
+        if (!fromCdn(still)) throw new Error('still failed');
+        img.src = local(still);
+        return img.decode();
+      })
       .then(() => {
         if (this.destroyed) return;
         entry.image = img;

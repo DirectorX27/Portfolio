@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { experience } from '@/data/experience';
 import { waitFor } from '@/lib/ready';
+import { fallback } from '@/lib/media';
 import styles from './Experience.module.css';
 
 export function Experience() {
@@ -21,7 +22,7 @@ export function Experience() {
       <ul className={styles.list}>
         {experience.map((item) => (
           <li key={item.id} className={styles.row}>
-            <img className={styles.logo} src={item.logo} alt="" width={22} height={22} />
+            <img className={styles.logo} src={item.logo} alt="" width={22} height={22} onError={fallback} />
             <span className={styles.company}>{item.company}</span>
             <span className={styles.period}>{item.period}</span>
           </li>

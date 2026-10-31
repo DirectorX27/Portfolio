@@ -3,6 +3,7 @@ import { altOf, captionOf, isVideo, type Work } from '@/data/works';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { gallery } from '@/config/site';
 import { imageLoaded, waitFor } from '@/lib/ready';
+import { fallback } from '@/lib/media';
 import { distribute } from './layout';
 import styles from './WorkList.module.css';
 
@@ -95,6 +96,7 @@ function Still({ work, src, alt, eager }: { work: Work; src: string; alt: string
       loading={eager ? 'eager' : 'lazy'}
       decoding="async"
       onLoad={() => setLoaded(true)}
+      onError={fallback}
     />
   );
 }
@@ -138,6 +140,7 @@ function WorkVideo({ work }: { work: Work }) {
       playsInline
       preload="none"
       onPlaying={() => setPlaying(true)}
+      onError={fallback}
     />
   );
 }

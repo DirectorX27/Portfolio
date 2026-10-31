@@ -1,3 +1,5 @@
+import { media } from '@/lib/media';
+
 // Всё, что меняется без правки вёрстки, лежит здесь.
 
 export const profile = {
@@ -30,9 +32,9 @@ export const location = {
 
 export const avatar = {
   // 320×320 (2× от 148px), без звука; постер — первый кадр
-  videoWebm: '/media/avatar.webm',
-  videoMp4: '/media/avatar.mp4',
-  poster: '/media/avatar-poster.jpg',
+  videoWebm: media('/media/avatar.webm'),
+  videoMp4: media('/media/avatar.mp4'),
+  poster: media('/media/avatar-poster.jpg'),
 } as const;
 
 // Параметры MeshGradient один в один из Paper (кнопка Contact)
