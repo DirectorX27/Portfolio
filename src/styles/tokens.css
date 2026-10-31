@@ -33,7 +33,7 @@
   --body-s: 14px;
   --caption: 12px;
   --clock-digits: 40px;
-  --clock-label: 11px;
+  --clock-label: 12px;
 
   /* Начертания, трекинг, интерлиньяж */
   --regular: 400;
@@ -91,5 +91,6 @@
 @media (max-resolution: 1.1dppx) {
   :root {
     --font-label: 'Geist Mono', ui-monospace, monospace;
+    --clock-label: 11px;
   }
 }

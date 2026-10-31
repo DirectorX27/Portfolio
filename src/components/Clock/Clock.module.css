@@ -29,7 +29,7 @@
   pointer-events: none;
 }
 
-/* Temperature / Location: Matrix Sans Print 11px, трекинг 0.1em */
+/* Temperature / Location: Matrix Sans Print 12/12, трекинг 0.1em (на экранах 1x — Geist Mono 11, см. tokens.css) */
 .label {
   align-self: stretch;
   font-family: var(--font-label);
