@@ -1,8 +1,11 @@
-/* Inter Display = Inter Variable с осью opsz 32 (см. --font-display-settings) */
+/* Шрифты урезаны до латиницы и нужных начертаний (из полных файлов рядом, fontTools): на первом экране
+   ~46 КБ вместо ~450. GitHub Pages в РФ отдаёт ~60 КБ/с, и полные файлы не успевали к открытию страницы.
+   Inter Display = Inter Variable с opsz 32, зашитым в файл, и осью wght 400–500 */
 @font-face {
   font-family: 'Inter Display';
-  src: url('../assets/fonts/InterVariable.woff2') format('woff2');
-  font-weight: 100 900;
+  src: url('../assets/fonts/InterDisplay-Variable.latin.woff2') format('woff2');
+  font-weight: 400 500;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2010-2027, U+2030-203A, U+20AC, U+2122, U+2190-2193, U+2197, U+2212;
   font-style: normal;
   font-display: swap;
 }
@@ -11,8 +14,9 @@
    и без этого рисует подпись с opsz 14 (шире и другого рисунка, чем строки Experience) */
 @font-face {
   font-family: 'Inter Display Static';
-  src: url('../assets/fonts/InterDisplay-Regular.woff2') format('woff2');
+  src: url('../assets/fonts/InterDisplay-Regular.latin.woff2') format('woff2');
   font-weight: 400;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2010-2027, U+2030-203A, U+20AC, U+2122, U+2190-2193, U+2197, U+2212;
   font-style: normal;
   font-display: swap;
 }
@@ -27,7 +31,7 @@
 
 @font-face {
   font-family: 'Geist Mono';
-  src: url('../assets/fonts/GeistMono-Regular.woff2') format('woff2');
+  src: url('../assets/fonts/GeistMono-Regular.latin.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -35,7 +39,8 @@
 
 @font-face {
   font-family: 'JetBrains Mono';
-  src: url('../assets/fonts/JetBrainsMono-Light.otf') format('opentype');
+  /* Только цифры и двоеточие — больше в часах ничего нет */
+  src: url('../assets/fonts/JetBrainsMono-Light.digits.woff2') format('woff2');
   font-weight: 300;
   font-style: normal;
   font-display: swap;
@@ -43,7 +48,7 @@
 
 @font-face {
   font-family: 'Matrix Sans Print';
-  src: url('../assets/fonts/MatrixSans-Print.otf') format('opentype');
+  src: url('../assets/fonts/MatrixSans-Print.latin.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;

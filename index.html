@@ -22,6 +22,9 @@
     <!-- Токены и прелоудер грузим из HTML, а не из JS: скелетон виден сразу, до загрузки скрипта -->
     <link rel="stylesheet" href="/src/styles/tokens.css" />
     <link rel="stylesheet" href="/src/styles/preloader.css" />
+    <!-- Inter качается сразу, параллельно со скриптом: прелоудер ждёт его не дольше 3 с.
+         Цифры часов и Matrix Sans весят по 3 КБ, Vite встраивает их прямо в CSS -->
+    <link rel="preload" href="/src/assets/fonts/InterDisplay-Variable.latin.woff2" as="font" type="font/woff2" crossorigin />
   </head>
   <body>
     <div id="root"></div>
