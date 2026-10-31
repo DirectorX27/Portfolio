@@ -23,7 +23,12 @@ type Entry = {
   visible: boolean; // хотя бы одна копия карточки на экране или рядом
   distance: number; // от ближайшей копии до экрана, px (0 — на экране)
   still: boolean; // картинка или постер загрузились (или не смогли)
+  started: number; // когда видео поставлено в загрузку, performance.now()
+  retries: number; // повторы после обрыва сети
 };
+
+const VIDEO_WAIT = 4000; // сколько следующее видео ждёт, пока предыдущее начнёт играть, мс
+const VIDEO_RETRIES = 3;
 
 type Item = {
   mesh: Mesh;
@@ -95,9 +100,9 @@ export class GalleryScene {
 
     const font = this.listen();
     this.resize();
-    // Картинки первого экрана просим у сети первыми: на медленном канале остальные им не мешают
+    // Картинки ниже первого экрана уступают сеть первому экрану и аватару
     const first = this.firstScreen();
-    this.loads = this.entries.map((e, i) => this.loadStill(e, first.includes(i) ? 'high' : 'low'));
+    this.loads = this.entries.map((e, i) => this.loadStill(e, first.includes(i) ? 'auto' : 'low'));
     this.ready = Promise.all([font, ...first.map((i) => this.loads[i])]);
     // Видео тяжелее всего остального вместе взятого, поэтому ждут, пока первый экран покажется
     this.ready.then(() => (this.videos = true));
@@ -133,12 +138,19 @@ export class GalleryScene {
     else if (!play && !video.paused) video.pause();
   };
 
-  // Видео грузятся по одному: когда карточка подъезжает к экрану и её постер уже на месте.
-  // Иначе на медленной сети несколько видео разом забирают канал, и не доходят ни они, ни постеры.
+  // Видео грузятся по очереди: когда карточка подъезжает к экрану и её постер уже на месте.
+  // Следующее ждёт, пока предыдущее начнёт играть, но не дольше VIDEO_WAIT — иначе
+  // на медленной сети одно тяжёлое видео держит все остальные.
   private loadNextVideo() {
     if (!this.videos) return;
+    const now = performance.now();
     const busy = this.entries.some(
-      (e) => e.visible && e.video?.getAttribute('src') && !e.video.error && e.video.readyState < HTMLMediaElement.HAVE_ENOUGH_DATA,
+      (e) =>
+        e.visible &&
+        e.video?.getAttribute('src') &&
+        !e.video.error &&
+        e.video.readyState < HTMLMediaElement.HAVE_FUTURE_DATA &&
+        now - e.started < VIDEO_WAIT,
     );
     if (busy) return;
     let next: Entry | undefined;
@@ -148,6 +160,7 @@ export class GalleryScene {
     }
     if (!next?.video || !next.work.src) return;
     next.video.src = next.work.src;
+    next.started = now;
     this.syncVideo(next);
   }
 
@@ -210,6 +223,8 @@ export class GalleryScene {
       visible: false,
       distance: Infinity,
       still: false,
+      started: 0,
+      retries: 0,
     };
 
     if (work.src && isVideo(work)) {
@@ -235,6 +250,16 @@ export class GalleryScene {
         videoTexture.image = video;
         entry.frame = true;
       });
+      // Сеть оборвала загрузку: сбрасываем src, и очередь поставит видео заново
+      video.addEventListener('error', () => {
+        if (this.destroyed || entry.retries >= VIDEO_RETRIES) return;
+        entry.retries++;
+        setTimeout(() => {
+          if (this.destroyed) return;
+          video.removeAttribute('src');
+          video.load();
+        }, 1000 * entry.retries);
+      });
       // Браузер сообщает о каждом новом кадре, а текстура обновляется в update()
       const onFrame = () => {
         if (this.destroyed) return;
@@ -247,7 +272,7 @@ export class GalleryScene {
     return entry;
   }
 
-  private loadStill(entry: Entry, priority: 'high' | 'low'): Promise<void> {
+  private loadStill(entry: Entry, priority: 'auto' | 'low'): Promise<void> {
     const { work } = entry;
     const still = work.src && isVideo(work) ? work.poster : work.src;
     if (!still) {
