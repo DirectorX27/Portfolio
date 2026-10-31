@@ -13,7 +13,7 @@ const FONTS = [
   '400 15px "Inter Display"',
   '500 15px "Inter Display"',
   '300 40px "JetBrains Mono"',
-  window.matchMedia(LOW_DPI).matches ? '400 10px "Matrix Sans Print 1x"' : '400 11px "Matrix Sans Print"',
+  window.matchMedia(LOW_DPI).matches ? '400 11px "Geist Mono"' : '400 11px "Matrix Sans Print"',
 ];
 
 // WebGL-галерея открывается отдельно от страницы: её скелетон ждёт первый кадр первого видео,
