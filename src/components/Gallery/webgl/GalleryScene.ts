@@ -21,6 +21,8 @@ type Entry = {
   videoTexture: Texture | null;
   frame: boolean; // у видео новый кадр, текстуру надо обновить
   visible: boolean; // хотя бы одна копия карточки на экране или рядом
+  distance: number; // от ближайшей копии до экрана, px (0 — на экране)
+  still: boolean; // картинка или постер загрузились (или не смогли)
 };
 
 type Item = {
@@ -63,6 +65,7 @@ export class GalleryScene {
   private destroyed = false;
   private cleanups: Array<() => void> = [];
   private loads: Promise<void>[] = []; // декодирование картинки или постера, по индексу работы
+  private videos = false; // первый экран готов — можно грузить видео
   readonly ready: Promise<unknown>; // всё, что видно на первом экране, — его ждёт прелоудер
 
   constructor(
@@ -92,7 +95,12 @@ export class GalleryScene {
 
     const font = this.listen();
     this.resize();
-    this.ready = Promise.all([font, ...this.firstScreen().map((i) => this.loads[i])]);
+    // Картинки первого экрана просим у сети первыми: на медленном канале остальные им не мешают
+    const first = this.firstScreen();
+    this.loads = this.entries.map((e, i) => this.loadStill(e, first.includes(i) ? 'high' : 'low'));
+    this.ready = Promise.all([font, ...first.map((i) => this.loads[i])]);
+    // Видео тяжелее всего остального вместе взятого, поэтому ждут, пока первый экран покажется
+    this.ready.then(() => (this.videos = true));
     this.raf = requestAnimationFrame(this.update);
   }
 
@@ -116,16 +124,32 @@ export class GalleryScene {
     this.entries.forEach(this.syncVideo);
   }
 
-  // Видео грузится, только когда карточка подъезжает к экрану, и играет, только пока видна.
-  // При reduced-motion стоит на месте.
+  // Видео играет, только пока карточка видна. При reduced-motion стоит на месте.
   private syncVideo = (entry: Entry) => {
-    const { video, work } = entry;
-    if (!video || !work.src) return;
-    if (entry.visible && !video.getAttribute('src')) video.src = work.src;
+    const { video } = entry;
+    if (!video?.getAttribute('src')) return;
     const play = entry.visible && !this.reduced;
     if (play && video.paused) video.play().catch(() => {});
     else if (!play && !video.paused) video.pause();
   };
+
+  // Видео грузятся по одному: когда карточка подъезжает к экрану и её постер уже на месте.
+  // Иначе на медленной сети несколько видео разом забирают канал, и не доходят ни они, ни постеры.
+  private loadNextVideo() {
+    if (!this.videos) return;
+    const busy = this.entries.some(
+      (e) => e.visible && e.video?.getAttribute('src') && !e.video.error && e.video.readyState < HTMLMediaElement.HAVE_ENOUGH_DATA,
+    );
+    if (busy) return;
+    let next: Entry | undefined;
+    for (const e of this.entries) {
+      if (!e.visible || !e.still || !e.video || e.video.getAttribute('src')) continue;
+      if (!next || e.distance < next.distance) next = e;
+    }
+    if (!next?.video || !next.work.src) return;
+    next.video.src = next.work.src;
+    this.syncVideo(next);
+  }
 
   destroy() {
     this.destroyed = true;
@@ -184,10 +208,12 @@ export class GalleryScene {
       videoTexture: null,
       frame: false,
       visible: false,
+      distance: Infinity,
+      still: false,
     };
 
     if (work.src && isVideo(work)) {
-      // src ставится в syncVideo, когда карточка подъедет к экрану
+      // src ставится в loadNextVideo, когда карточка подъедет к экрану
       const video = document.createElement('video');
       video.muted = true;
       video.loop = true;
@@ -218,27 +244,31 @@ export class GalleryScene {
       video.requestVideoFrameCallback(onFrame);
     }
 
-    const still = work.src && isVideo(work) ? work.poster : work.src;
-    if (still) {
-      const img = new Image();
-      img.decoding = 'async';
-      img.src = still;
-      this.loads.push(
-        img
-          .decode()
-          .then(() => {
-            if (this.destroyed) return;
-            entry.image = img;
-            this.redraw(entry);
-          })
-          .catch(() => {
-            // файл не загрузился — остаётся плашка
-          }),
-      );
-    } else {
-      this.loads.push(Promise.resolve());
-    }
     return entry;
+  }
+
+  private loadStill(entry: Entry, priority: 'high' | 'low'): Promise<void> {
+    const { work } = entry;
+    const still = work.src && isVideo(work) ? work.poster : work.src;
+    if (!still) {
+      entry.still = true;
+      return Promise.resolve();
+    }
+    const img = new Image();
+    img.decoding = 'async';
+    img.fetchPriority = priority;
+    img.src = still;
+    return img
+      .decode()
+      .then(() => {
+        if (this.destroyed) return;
+        entry.image = img;
+        this.redraw(entry);
+      })
+      .catch(() => {
+        // файл не загрузился — остаётся плашка
+      })
+      .finally(() => (entry.still = true));
   }
 
   private redraw(entry: Entry) {
@@ -351,6 +381,7 @@ export class GalleryScene {
 
     const margin = sh; // видео заранее грузится за экран до появления
     const visible = new Set<Entry>();
+    for (const entry of this.entries) entry.distance = Infinity;
     for (const item of this.items) {
       const offset = this.scroll.current * speedOf(item.column);
       item.y = mod(item.top + gallery.paddingTop - offset + item.height, item.loop) - item.height;
@@ -361,6 +392,8 @@ export class GalleryScene {
       mesh.position.x = -vw / 2 + mesh.scale.x / 2 + (this.colX[item.column] / sw) * vw;
       mesh.position.y = vh / 2 - mesh.scale.y / 2 - (item.y / sh) * vh;
       if (item.y < sh + margin && item.y + item.height > -margin) visible.add(item.entry);
+      const distance = Math.max(0, item.y - sh, -(item.y + item.height));
+      item.entry.distance = Math.min(item.entry.distance, distance);
     }
 
     for (const entry of this.entries) {
@@ -376,6 +409,7 @@ export class GalleryScene {
         entry.videoTexture.needsUpdate = true;
       }
     }
+    this.loadNextVideo();
 
     this.renderer.render({ scene: this.scene, camera: this.camera });
   };
