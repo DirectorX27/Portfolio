@@ -84,3 +84,13 @@
     --gallery-width: 440px;
   }
 }
+
+/* Экран 1x: точки Matrix Sans стоят с шагом 0.1em, при 11px шаг 1.1px — точки ложатся мимо пикселей
+   и слипаются в кашу. При 10px шаг ровно 1px, а в версии 1x точки сдвинуты на полшага в центр пикселя.
+   Строку на целый пиксель ставит Clock (useSnapToPixel). Ретина не меняется. Тот же запрос в src/lib/pixels.ts */
+@media (max-resolution: 1.1dppx) {
+  :root {
+    --font-label: 'Matrix Sans Print 1x', system-ui, sans-serif;
+    --clock-label: 10px;
+  }
+}

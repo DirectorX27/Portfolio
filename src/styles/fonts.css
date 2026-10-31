@@ -48,3 +48,13 @@
   font-style: normal;
   font-display: swap;
 }
+
+/* Тот же Matrix Sans для экранов 1x: контуры сдвинуты на 50 единиц вправо, чтобы при 10px
+   каждая точка попадала в центр пикселя, а не на границу двух (см. tokens.css) */
+@font-face {
+  font-family: 'Matrix Sans Print 1x';
+  src: url('../assets/fonts/MatrixSans-Print-1x.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}

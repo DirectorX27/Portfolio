@@ -1,6 +1,8 @@
 // Страница показывается целиком, а не по кусочкам: компоненты сообщают, чего ждать (waitFor),
 // а reveal() убирает прелоудер из index.html, когда всё готово.
 
+import { LOW_DPI } from './pixels';
+
 // Скелетон держится хотя бы столько от начала загрузки, чтобы не мигнуть на быстром кэше
 const MIN_MS = 500;
 // И не дольше: на медленной сети показываем то, что успело загрузиться
@@ -11,7 +13,7 @@ const FONTS = [
   '400 15px "Inter Display"',
   '500 15px "Inter Display"',
   '300 40px "JetBrains Mono"',
-  '400 11px "Matrix Sans Print"',
+  window.matchMedia(LOW_DPI).matches ? '400 10px "Matrix Sans Print 1x"' : '400 11px "Matrix Sans Print"',
 ];
 
 // WebGL-галерея открывается отдельно от страницы: её скелетон ждёт первый кадр первого видео,
