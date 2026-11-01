@@ -21,6 +21,14 @@ float fbm(vec2 p) {
   return v;
 }
 
+// Блик объектива: мягкий диск со светлой кромкой
+vec3 ghost(vec2 uv, vec2 c, float r, vec3 tint) {
+  float d = length(uv - c);
+  float disc = smoothstep(r, r * 0.7, d);
+  float rim = exp(-pow((d - r * 0.92) / (r * 0.12), 2.0));
+  return tint * (disc * 0.05 + rim * 0.07);
+}
+
 void main() {
   vec2 frag = gl_FragCoord.xy;
   vec2 uv = vec2(frag.x / uRes.x, 1.0 - frag.y / uRes.y);
@@ -55,10 +63,19 @@ void main() {
   vec3 moon = mix(earthshine, vec3(0.96, 0.95, 0.89) * maria, moonLit);
   col = mix(col, moon, smoothstep(1.0, 0.86, mr) * uStarA);
 
-  // Солнце: широкий ореол + диск
+  // Солнце как в Apple Погоде. Здесь — то, что лежит в небе под облаками: дымка и кольцо гало.
+  // Ядро, свечение, блики и лучи — в конце, поверх притемнения.
   float sd = length(uv - uSun);
-  col += uWarm * uSunA * (0.45 * exp(-sd * 6.0) + 0.22 * exp(-sd * 1.8));
-  col = mix(col, vec3(1.0, 0.98, 0.93), smoothstep(0.05, 0.042, sd) * uSunDisc);
+  // Белый с лёгкой примесью тёплого: днём почти чистый, на закате рыжеет
+  vec3 sunCol = mix(vec3(1.0, 0.99, 0.96), uWarm, 0.6);
+  // Дымка: небо вокруг солнца выцветает в бледно-голубое, как при рассеянии в атмосфере
+  float haze = exp(-sd * 2.6) * uSunA;
+  col = mix(col, mix(vec3(0.8, 0.88, 0.98), sunCol, exp(-sd * 6.0)), clamp(haze * 0.55, 0.0, 1.0));
+  // Кольцо гало: радужная полоса, красный внутри, синий снаружи
+  float rd = sd - 0.36, w = 0.016;
+  vec3 rainbow = vec3(exp(-pow((rd + w) / w, 2.0)), exp(-pow(rd / w, 2.0)), exp(-pow((rd - w) / w, 2.0)));
+  float breathe = 0.85 + 0.15 * sin(uTime * 0.4);
+  col += (rainbow * 0.9 + 0.15 * exp(-pow(rd / (w * 3.0), 2.0))) * 0.11 * uSunA * breathe;
 
   // Облака: fbm с искажением координат, растянуты по горизонтали
   vec2 p = vec2(uv.x * 1.7 + uDrift, uv.y * 2.8) + uSeed * 7.0;
@@ -91,6 +108,34 @@ void main() {
   // Читаемость: притемнение и виньетка
   col *= 1.0 - uScrim;
   col *= 1.0 - smoothstep(0.3, 0.52, length(uv - 0.5)) * 0.22;
+
+  // Солнце светит поверх притемнения и виньетки, иначе белое ядро становится серым.
+  // Облака его закрывают (occl), блики и лучи рождаются в объективе и лежат поверх всего.
+  float occl = 1.0 - dens * 0.9;
+  col += sunCol * uSunA * occl * (0.9 * exp(-sd * 18.0) + 0.38 * exp(-sd * 6.5) + 0.1 * exp(-sd * 2.2));
+  // Ядро пересвечено: края нет, плато белого переходит в свечение
+  float core = smoothstep(0.085, 0.0, sd);
+  col = mix(col, vec3(1.0), clamp(core * 1.6, 0.0, 1.0) * uSunDisc * occl);
+
+  vec2 axis = vec2(0.5) - uSun;
+  float drift = 0.012 * sin(uTime * 0.3);
+  vec3 g = ghost(uv, uSun + axis * (0.38 + drift), 0.035, vec3(1.0, 0.95, 0.85));
+  g += ghost(uv, uSun + axis * (0.52 + drift), 0.055, vec3(0.9, 0.95, 1.0));
+  g += ghost(uv, uSun + axis * (0.68 + drift), 0.075, vec3(0.85, 0.92, 1.0));
+  g += ghost(uv, uSun + axis * (0.86 + drift), 0.045, vec3(1.0, 0.9, 0.8));
+  g += ghost(uv, uSun + axis * (1.35 + drift * 2.0), 0.11, vec3(0.8, 0.9, 1.0));
+  col += g * uSunDisc;
+
+  vec2 sv = uv - uSun;
+  float ang = atan(sv.y, sv.x);
+  float rays = pow(abs(sin(ang * 5.0 + uTime * 0.03)), 30.0) * 0.6 + pow(abs(sin(ang * 9.0 - 1.3 - uTime * 0.02)), 50.0) * 0.4;
+  col += sunCol * rays * exp(-sd * 7.0) * 0.175 * uSunDisc * occl;
+
+  // Потолок яркости 0.9: выше колена свет плавно сжимается и не доходит до белого текста.
+  // Только пока видно солнце — вспышки молний в грозу не трогаем.
+  vec3 over = max(col - 0.68, 0.0);
+  vec3 capped = min(col, vec3(0.68)) + 0.22 * (1.0 - exp(-over / 0.22));
+  col = mix(col, capped, uSunDisc);
 
   gl_FragColor = vec4(col, 1.0);
 }

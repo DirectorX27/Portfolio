@@ -251,7 +251,8 @@ export class SkyRenderer {
     this.uniform('uSeed', this.seed);
     this.uniform('uTop', unit(top));
     this.uniform('uBot', unit(bottom));
-    this.uniform('uSun', [0.5 + 0.4 * cur.sunX, clamp(0.92 - cur.altitude / 45, 0.12, 1.05)]);
+    // Выше 28° солнце не поднимается: иначе заходит на температуру. Цвет неба — по настоящей высоте
+    this.uniform('uSun', [0.5 + 0.4 * cur.sunX, clamp(0.92 - Math.min(cur.altitude, 28) / 45, 0.12, 1.05)]);
     this.uniform('uSunA', smooth(-6, 2, cur.altitude) * (1 - cur.clouds * 0.8));
     this.uniform('uSunDisc', smooth(-1, 1, cur.altitude) * (1 - cur.clouds * 0.9));
     this.uniform('uWarm', unit(mix([255, 246, 225], [255, 160, 90], golden)));
